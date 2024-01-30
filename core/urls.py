@@ -21,5 +21,6 @@ from stats import views
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("", views.rankings, name="rankings"),
+    path("", views.seasons, name="seasons"),
+    path("ranking_table", views.ranking_table, name="ranking_table"),
 ]

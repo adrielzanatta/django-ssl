@@ -1,26 +1,23 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="overflow-x-auto w-4/5 my-6 mx-auto bg-neutral rounded-xl">
-    <table class="table-sm">
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Points</th>
-          <th>Goals</th>
-          <th>MVP</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for player in players.all %}
-        <tr>
-            <td>{{player.person.name}}</td>
-            <td>{{player.points}}</td>
-            <td>{{player.goals}}</td>
-            <td>{{player.is_mvp}}</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
+  <select class="w-full select select-bordered" 
+    name="season" 
+    hx-get="{% url 'ranking_table' %}"
+    hx-trigger="change"
+    hx-target="#ranking_table"
+    >
+
+    <option disabled selected>Select the season...</option>
+      <option value="all_seasons">All seasons</option>
+    {% for season in seasons.all %}
+      <option value="{{season.pk}}">{{ season.year }}</option>
+    {% endfor %}
+
+  </select>
+
+<div id="ranking_table">
+  {% include 'partials/ranking_table.html' %}
+</div>
+
 {% endblock %}
