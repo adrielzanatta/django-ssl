@@ -8,7 +8,10 @@ class Person(models.Model):
     nickname = models.CharField(max_length=200)
 
     def __str__(self):
-        return self.name
+        return self.nickname
+
+    class Meta:
+        ordering = ["nickname"]
 
 
 class Season(models.Model):
@@ -67,4 +70,4 @@ class Player(models.Model):
         super().save(**kwargs)
 
     def __str__(self):
-        return str(self.person.name)
+        return str(self.person.nickname)

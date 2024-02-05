@@ -1,34 +1,34 @@
-<div class="w-fit 6 my-6 bg-neutral rounded-xl">
-    <table class="table-sm">
-      <thead>
-        <tr>
-          <th>NAME</th>
-          <th>GP</th>
-          <th>PTS</th>
-          <th>PTS%</th>
-          <th>GOALS</th>
-          <th>GOALS/G</th>
-          <th>W</th>
-          <th>L</th>
-          <th>T</th>
-          <th>MVP</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for player in players.all %}
-        <tr>
-            <td>{{player.person__name}}</td>
-            <td>{{player.fixture__count}}</td>
-            <td>{{player.points__sum}}</td>
-            <td>{{player.pct_points|floatformat:1}}</td>
-            <td>{{player.goals__sum}}</td>
-            <td>{{player.goals__avg}}</td>
-            <td>{{player.wins}}</td>
-            <td>{{player.losses}}</td>
-            <td>{{player.ties}}</td>
-            <td>{{player.is_mvp__count}}</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
+<div class="w-full bg-neutral rounded-xl">
+  <table class="table-sm">
+    <thead>
+      <tr>
+        <th>NAME</th>
+        <th>GP</th>
+        <th>PTS</th>
+        <th>PTS%</th>
+        <th>GLS</th>
+        <th>GLS/G</th>
+        <th>W</th>
+        <th>L</th>
+        <th>T</th>
+        <th>MVP</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for player in players.all %}
+      <tr>
+        <td>{{player.person__nickname}}</td>
+        <td>{{player.fixture__count}}</td>
+        <td>{{player.points__sum}}</td>
+        <td>{{player.pct_points|floatformat:1}}</td>
+        <td>{{player.goals__sum}}</td>
+        <td>{{player.goals__avg|floatformat:1}}</td>
+        <td>{{player.wins}}</td>
+        <td>{{player.losses}}</td>
+        <td>{{player.ties}}</td>
+        <td>{{player.is_mvp__count}}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>

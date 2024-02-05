@@ -8,24 +8,21 @@
   </div>
 
   <div class="flex justify-center col-span-3 my-6">
-    <div id="ranking_table" class="">
-      {% include 'partials/ranking_table.html' %}
+    <div id="fixtures_list" class="">
+      {% include 'partials/fixtures_list.html' %}
     </div>
   </div>
 
   <div id="filters" class="flex">
     <form
       class="form-control flex-col my-6 mr-44"
-      hx-get="{% url 'ranking_table' %}"
-      hx-trigger="change from:body #season, #attendance"
-      hx-target="#ranking_table"
-      hx-include="#season, #attendance"
+      hx-get="{% url 'fixtures_list' %}"
+      hx-trigger="change from:body #season"
+      hx-target="#fixtures_list"
+      hx-include="#season"
     >
       <!-- Season selection filter -->
       {% include 'filters/season_selection.html' %}
-
-      <!-- Over 50% attendace filter -->
-      {% include 'filters/toggle_attendance.html' %}
     </form>
   </div>
 </div>

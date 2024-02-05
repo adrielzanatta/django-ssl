@@ -13,7 +13,7 @@ from django.db.models import (
     DecimalField,
 )
 from django.db.models.functions import Cast
-from .models import Player, Season
+from .models import Player, Season, Fixture
 
 # Create your views here.
 
@@ -25,12 +25,11 @@ def seasons(request):
 
 
 def ranking_table(request):
-    season = request.GET.get("season")
 
-    if season == "all_seasons":
-        fixt_list = Player.objects.all()
-    else:
-        fixt_list = Player.objects.filter(fixture__season__pk=season)
+    season = request.GET.get("season")
+    print(request.GET)
+
+    fixt_list = Player.objects.filter(fixture__season__pk=season)
 
     fixt_points = fixt_list.annotate(
         points=Case(
@@ -47,7 +46,7 @@ def ranking_table(request):
     )
 
     rankings = (
-        fixt_points.values("person__name")
+        fixt_points.values("person__nickname")
         .annotate(
             Sum("points"),
             Sum("goals"),
@@ -69,6 +68,26 @@ def ranking_table(request):
         .order_by("-points__sum", "-goals__sum")
     )
 
+    attendance = request.GET.get("attendance")
+
+    if attendance:
+        count_fixtures = Fixture.objects.filter(season__pk=season).aggregate(
+            Count("id")
+        )["id__count"]
+
+        rankings = rankings.filter(fixture__count__gte=(count_fixtures // 2))
+
     context = {"players": rankings}
 
     return render(request, "partials/ranking_table.html", context)
+
+
+def fixtures(request):
+    seasons = Season.objects.all()
+    context = {"seasons": seasons}
+    return render(request, "fixtures.html", context)
+
+
+def fixtures_list(request):
+    context = {}
+    return render(request, "partials/fixtures_list.html", context)
