@@ -10,7 +10,6 @@ from django.db.models import (
     Avg,
     FloatField,
     ExpressionWrapper,
-    DecimalField,
 )
 from django.db.models.functions import Cast
 from .models import Player, Season, Fixture
@@ -27,7 +26,6 @@ def seasons(request):
 def ranking_table(request):
 
     season = request.GET.get("season")
-    print(request.GET)
 
     fixt_list = Player.objects.filter(fixture__season__pk=season)
 
@@ -50,9 +48,9 @@ def ranking_table(request):
         .annotate(
             Sum("points"),
             Sum("goals"),
-            Count("is_mvp"),
             Count("fixture"),
             Avg("goals"),
+            is_mvp__count=Count("is_mvp", filter=Q(is_mvp=True)),
             wins=Count("fixture", filter=Q(points=3)),
             ties=Count("fixture", filter=Q(points=1)),
             losses=Count("fixture", filter=Q(points=0)),
@@ -89,5 +87,18 @@ def fixtures(request):
 
 
 def fixtures_list(request):
-    context = {}
+    season = request.GET.get("season")
+
+    if season == "all_seasons":
+        fixtures = Fixture.objects.all()
+    else:
+        fixtures = Fixture.objects.filter(season__pk=season)
+
+    fixtures = fixtures.annotate(
+        team_1=Sum("players__goals", filter=Q(players__team_played=1)),
+        team_2=Sum("players__goals", filter=Q(players__team_played=2)),
+    ).order_by("-date")
+
+    context = {"fixtures": fixtures}
+
     return render(request, "partials/fixtures_list.html", context)
