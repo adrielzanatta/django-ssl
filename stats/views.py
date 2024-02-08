@@ -27,7 +27,10 @@ def ranking_table(request):
 
     season = request.GET.get("season")
 
-    fixt_list = Player.objects.filter(fixture__season__pk=season)
+    if season == "all_seasons":
+        fixt_list = Player.objects.all()
+    else:
+        fixt_list = Player.objects.filter(fixture__season__pk=season)
 
     fixt_points = fixt_list.annotate(
         points=Case(
@@ -69,9 +72,12 @@ def ranking_table(request):
     attendance = request.GET.get("attendance")
 
     if attendance:
-        count_fixtures = Fixture.objects.filter(season__pk=season).aggregate(
-            Count("id")
-        )["id__count"]
+        if season == "all_seasons":
+            count_fixtures = Fixture.objects.all()
+        else:
+            count_fixtures = Fixture.objects.filter(fixture__season__pk=season)
+
+        count_fixtures = count_fixtures.aggregate(Count("id"))["id__count"]
 
         rankings = rankings.filter(fixture__count__gte=(count_fixtures // 2))
 

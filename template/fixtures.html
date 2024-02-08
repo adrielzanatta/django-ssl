@@ -1,30 +1,27 @@
 {% extends 'base.html' %} {% block content %}
-<div class="grid grid-cols-5 gap-8 justify-around">
-  <div class="my-6 flex justify-end">
-    <div id="menu" class="menu bg-base-200 w-56 rounded-box h-fit">
-      <li><a href="{%url 'seasons' %}">Rankings</a></li>
-      <li><a href="{%url 'fixtures' %}">Fixtures</a></li>
-    </div>
-  </div>
 
-  <div class="flex justify-center col-span-3 my-6">
-    <div id="fixtures_list" class="">
-      {% include 'partials/fixtures_list.html' %}
-    </div>
-  </div>
+<!-- Nav menu component -->
+{% include 'components/menu.html' %}
 
-  <div id="filters" class="flex">
-    <form
-      class="form-control flex-col gap-4 my-6"
-      hx-get="{% url 'fixtures_list' %}"
-      hx-trigger="change from:body #season"
-      hx-target="#fixtures_list"
-      hx-include="#season"
-    >
-      <!-- Season selection filter -->
-      {% include 'filters/season_selection.html' %}
-    </form>
+<div
+  class="flex flex-row justify-center lg:my-6 order-last lg:order-none overflow-auto h-dvh"
+>
+  <div id="fixtures_list" class="">
+    {% include 'partials/fixtures_list.html' %}
   </div>
+</div>
+
+<div id="filters" class="flex">
+  <form
+    class="form-control w-full flex flex-row justify-center lg:justify-start lg:flex-col lg:my-6"
+    hx-get="{% url 'fixtures_list' %}"
+    hx-trigger="change, load from:body #season"
+    hx-target="#fixtures_list"
+    hx-include="#season"
+  >
+    <!-- Season selection filter -->
+    {% include 'filters/season_selection.html' %}
+  </form>
 </div>
 
 {% endblock %}

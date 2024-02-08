@@ -11,11 +11,14 @@
       rel="stylesheet"
       type="text/css"
     />
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <script src="https://cdn.tailwindcss.com/3.4.1"></script>
   </head>
   <body>
-    {% block content %} {% endblock %}
+    <div
+      class="flex flex-col lg:flex-row lg:justify-evenly lg:align-middle gap-4 h-dvh"
+    >
+      {% block content %} {% endblock %}
+    </div>
   </body>
-
-  <script src="https://unpkg.com/htmx.org@1.9.10"></script>
-  <script src="https://cdn.tailwindcss.com/3.4.1"></script>
 </html>
