@@ -26,20 +26,36 @@
               <th class="w-36">Name</th>
               <th>Goals</th>
               <th>MVP Votes</th>
+              <th>Clutch</th>
             </tr>
           </thead>
           <tbody>
-            {% for player in fixture.players.all %}
             <!-- Check the team played -->
+            {% for player in fixture.players.all %}
+            
             {% if player.team_played == 1 %}
+
             <tr>
               <td>{{player.person}}</td>
               <td>{{player.goals}}</td>
               <td>{{player.mvp_votes}}</td>
+              <td>
+                {% if fixture.winner_team == 1 and fixture.diff > 1 and player.goals >= fixture.diff %}
+               
+                Yes
+
+                {% else %}
+                
+                No
+
+                {% endif %}
+                
+              </td>
             </tr>
+
             {% endif %}
-            <!--  -->
             {% endfor %}
+
           </tbody>
         </table>
       </div>
@@ -53,6 +69,7 @@
               <th class="w-36">Name</th>
               <th>Goals</th>
               <th>MVP Votes</th>
+              <th>Clutch</th>
             </tr>
           </thead>
           <tbody>
@@ -63,6 +80,18 @@
               <td>{{player.person}}</td>
               <td>{{player.goals}}</td>
               <td>{{player.mvp_votes}}</td>
+              <td>
+                {% if fixture.winner_team == 2 and fixture.diff > 1 and player.goals >= fixture.diff %}
+               
+                Yes
+
+                {% else %}
+                
+                No
+
+                {% endif %}
+                
+              </td>
             </tr>
             {% endif %}
             <!--  -->

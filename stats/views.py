@@ -10,9 +10,11 @@ from django.db.models import (
     Avg,
     FloatField,
     ExpressionWrapper,
+    Func,
 )
 from django.db.models.functions import Cast
 from .models import Player, Season, Fixture
+import numpy as np
 
 # Create your views here.
 
@@ -75,7 +77,7 @@ def ranking_table(request):
         if season == "all_seasons":
             count_fixtures = Fixture.objects.all()
         else:
-            count_fixtures = Fixture.objects.filter(fixture__season__pk=season)
+            count_fixtures = Fixture.objects.filter(season__pk=season)
 
         count_fixtures = count_fixtures.aggregate(Count("id"))["id__count"]
 
@@ -103,8 +105,9 @@ def fixtures_list(request):
     fixtures = fixtures.annotate(
         team_1=Sum("players__goals", filter=Q(players__team_played=1)),
         team_2=Sum("players__goals", filter=Q(players__team_played=2)),
+        diff=Func((F("team_1") - F("team_2")), function="ABS"),
     ).order_by("-date")
 
+    print(fixtures)
     context = {"fixtures": fixtures}
-
     return render(request, "partials/fixtures_list.html", context)
