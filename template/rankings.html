@@ -20,7 +20,7 @@
     hx-get="{% url 'ranking_table' %}"
     hx-trigger="change, load  from:body #season, #attendance"
     hx-target="#ranking_table"
-    hx-include="#season, #attendance"
+    hx-include="#season, #attndeance"
   >
     <!-- Season selection filter -->
     {% include 'filters/season_selection.html' %}

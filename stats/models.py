@@ -26,7 +26,6 @@ class Fixture(models.Model):
     )
     date = models.DateField()
     number = models.PositiveSmallIntegerField(blank=True, null=True)
-    winner_team = models.PositiveSmallIntegerField(blank=True, null=True)
     drafter = models.ForeignKey(
         Person, on_delete=models.PROTECT, related_name="fixtures"
     )

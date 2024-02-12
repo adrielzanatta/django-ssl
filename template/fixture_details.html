@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<!-- Nav menu component -->
+{% include 'components/menu.html' %}
+
+<div class="flex justify-center w-full">
+
+        <form 
+        method="post"
+        action="{% url 'fixture_delete' fixture.id %}" 
+        class="flex flex-col h-fit card bg-base-300 rounded-box justify-center w-fit px-12 py-6 lg:my-6 gap-4">
+            {% csrf_token %}
+            <div class="flex flex-row justify-center gap-8">
+                {{ fixture_form }}
+            </div>
+            
+            <hr class="">
+            <div class="flex flex-row justify-center">
+                <table class="table table-sm w-fit min-w-0">
+                    <thead>
+                        <tr class="text-align-center text-center">
+                            <th>Team Played</th>
+                            <th>Player</th>
+                            <th>Goals</th>
+                            <th>MVP Votes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{player_formset.management_form}}
+                        {% for form in player_formset %}
+                            <tr>
+                                <td>{{ form.team_played }}</td>
+                                <td>{{ form.person }}</td>
+                                <td>{{ form.goals }}</td>
+                                <td>{{ form.mvp_votes }}</td>
+                            </tr>
+                        
+                        {% endfor %}
+                        
+                    </tbody>
+                </table>
+            </div>
+            <hr class="">
+            <div class="flex flex-row justify-end gap-4">
+                <a hx-boost="True" href="{% url 'fixtures' %}" class="btn" name="cancel">
+                    Cancel
+                </a>
+                <button class="btn btn-error w-20" name="delete">
+                    Delete
+                </button>
+                <button class="btn btn-success w-40" name="save">
+                    Save
+                </button>
+               
+                
+            </div>
+            
+            
+        </form>
+</div>
+
+{% endblock%}

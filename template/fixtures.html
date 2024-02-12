@@ -11,9 +11,17 @@
   </div>
 </div>
 
-<div id="filters" class="flex">
+
+<div id="filters" class="flex flex-row lg:flex-col justify-around lg:justify-start">
+  <div class="my-6 w-fit order-last lg:order-none">
+    <a role='button' class="btn btn-success" hx-boost=True href="{% url 'fixture_add' %}">
+        + Add fixture
+    </a>
+  </div>
+
+
   <form
-    class="form-control w-full flex flex-row justify-center lg:justify-start lg:flex-col lg:my-6"
+    class="form-control order-1 lg:order-none flex flex-row justify-center lg:justify-start lg:flex-col"
     hx-get="{% url 'fixtures_list' %}"
     hx-trigger="change, load from:body #season"
     hx-target="#fixtures_list"

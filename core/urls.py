@@ -23,7 +23,10 @@ from stats import views
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("", views.seasons, name="seasons"),
-    path("ranking_table", views.ranking_table, name="ranking_table"),
-    path("fixtures", views.fixtures, name="fixtures"),
-    path("fixtures_list", views.fixtures_list, name="fixtures_list"),
+    path("ranking_table/", views.ranking_table, name="ranking_table"),
+    path("fixtures/", views.fixtures, name="fixtures"),
+    path("fixtures_list/", views.fixtures_list, name="fixtures_list"),
+    path("fixtures/<int:pk>/", views.fixture_details, name="fixture_details"),
+    path("fixtures/add/", views.fixture_add, name="fixture_add"),
+    path("fixtures/delete/<int:pk>/", views.fixture_delete, name="fixture_delete"),
 ]
