@@ -28,5 +28,4 @@ urlpatterns = [
     path("fixtures_list/", views.fixtures_list, name="fixtures_list"),
     path("fixtures/<int:pk>/", views.fixture_details, name="fixture_details"),
     path("fixtures/add/", views.fixture_add, name="fixture_add"),
-    path("fixtures/delete/<int:pk>/", views.fixture_delete, name="fixture_delete"),
 ]

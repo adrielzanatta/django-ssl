@@ -28,3 +28,12 @@ PlayerFormset = inlineformset_factory(
     extra=15,
     can_delete=False,
 )
+
+PlayerFormsetDetail = inlineformset_factory(
+    Fixture,
+    Player,
+    fields="__all__",
+    formset=BasePlayerFormset,
+    extra=1,
+    can_delete=False,
+)

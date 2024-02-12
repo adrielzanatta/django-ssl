@@ -14,7 +14,7 @@ from django.db.models import (
 )
 from django.db.models.functions import Cast
 from .models import Player, Season, Fixture
-from .forms import FixtureForm, PlayerFormset
+from .forms import FixtureForm, PlayerFormset, PlayerFormsetDetail
 
 # Create your views here.
 
@@ -133,20 +133,49 @@ def fixtures_list(request):
 
 
 def fixture_details(request, pk):
-    fixture = get_object_or_404(Fixture, id=pk)
-    fixture_form = FixtureForm(instance=fixture)
-    player_formset = PlayerFormset(instance=fixture)
 
-    context = {
-        "fixture_form": fixture_form,
-        "player_formset": player_formset,
-        "fixture": fixture,
-    }
+    if request.method == "POST":
 
-    return render(request, "fixture_details.html", context)
+        if "delete" in request.POST:
+            fixture = get_object_or_404(Fixture, id=pk)
+            fixture.delete()
+            return redirect("fixtures")
+
+        elif "save" in request.POST:
+            fixture = get_object_or_404(Fixture, id=pk)
+            form = FixtureForm(request.POST, instance=fixture)
+
+            if form.is_valid():
+                instance = form.save()
+                formset = PlayerFormsetDetail(request.POST, instance=instance)
+
+                for form in formset:
+
+                    if form.is_valid():
+                        form.save()
+                    else:
+                        formset = PlayerFormsetDetail(instance=instance)
+
+                return redirect("fixtures")
+
+            else:
+                form = FixtureForm(instance=fixture)
+    else:
+        fixture = get_object_or_404(Fixture, id=pk)
+        fixture_form = FixtureForm(instance=fixture)
+        player_formset = PlayerFormsetDetail(instance=fixture)
+
+        context = {
+            "fixture_form": fixture_form,
+            "player_formset": player_formset,
+            "fixture": fixture,
+        }
+
+        return render(request, "fixture_details.html", context)
 
 
 def fixture_add(request):
+
     if request.method == "POST":
 
         if "save" in request.POST:
@@ -154,11 +183,15 @@ def fixture_add(request):
             if form.is_valid():
                 instance = form.save()
                 formset = PlayerFormset(request.POST, instance=instance)
-                print(formset)
                 if formset.is_valid():
                     formset.save()
+                else:
+                    formset = PlayerFormset(instance=instance)
 
-        return redirect("fixtures")
+                return redirect("fixtures")
+
+            else:
+                form = FixtureForm()
 
     else:
         formset = PlayerFormset()
@@ -170,13 +203,3 @@ def fixture_add(request):
         }
 
     return render(request, "fixture_add.html", context)
-
-
-def fixture_delete(request, pk):
-    print(request.POST)
-    if request.method == "POST":
-        if "delete" in request.POST:
-            fixture = get_object_or_404(Fixture, id=pk)
-            fixture.delete()
-
-    return redirect("fixtures")
