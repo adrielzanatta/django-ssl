@@ -1,107 +1,61 @@
+<div class="flex flex-col overflow-auto gap-8">
 {% for fixture in fixtures.all %}
-<div tabindex="0" class="collapse bg-base-300 mb-6 min-w-0">
-  <div class="collapse-title px-32 flex-col">
-    <div class="flex justify-center align-middle">
-      <div class="">Round {{fixture.number}} - {{fixture.date}}</div>
-      <a class="btn btn-xs" href="{{fixture.pk}}/">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.66V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h5.34"></path><polygon points="18 2 22 6 12 16 8 16 8 12 18 2"></polygon></svg>
-      </a>
+  <div tabindex="0" class="collapse border border-base-300 bg-base-200 flex-shrink-0"> 
+    <div class="collapse-title pl-12">
+
+      <div class='flex flex-row gap-1'>
+
+        <div class="flex flex-col justify-center items-end flex-1">
+          
+          <div class="flex justify-between place-items-baseline center w-full">
+            <span class="text-lg">Drafter Team</span>
+            <span class="text-3xl">{{ fixture.team_1 }}</span>
+          </div>
+
+          <div class="divider divider-vertical h-0"></div>
+          
+          <div class="flex justify-between align-top w-full">
+            <span class="text-lg">Away Team</span>
+            <span class="text-3xl">{{ fixture.team_2 }}</span>          
+          </div>
+
+        </div>
+
+        <div class="divider divider-horizontal w-0"></div>
+
+        <div class="flex flex-col justify-center items-end w-32">
+          <a class="btn btn-neutral btn-xs text-neutral-content" href="{{fixture.pk}}/">Edit
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.66V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h5.34"></path><polygon points="18 2 22 6 12 16 8 16 8 12 18 2"></polygon></svg>
+          </a>
+
+            <span class="text text-sm">Round {{fixture.number}}</span>
+
+          <span class="text text-sm">{{fixture.date}}</span>
+          <span class="text text-sm">Drafter: {{fixture.drafter}}</span>
+
+        </div>
+      </div>
+
     </div>
     
-    <div class="flex justify-between place-items-center">
-      <div class="text-xl">Drafter Team</div>
-      <div class="text-3xl">{{ fixture.team_1 }}</div>
-      <div class="divider divider-horizontal"></div>
-      <div class="text-3xl">{{ fixture.team_2 }}</div>
-      <div class="text-xl">Away Team</div>
-    </div>
-    <div class="flex justify-center">
-      <div>Drafter: {{fixture.drafter}}</div>
-    </div>
-  </div>
-  <div class="collapse-content">
-    <div class="flex w-full">
-      <div
-        class="grid h-fit card bg-base-100 rounded-box place-items-center w-full"
-      >
-        <table class="table table-xs">
-          <thead>
-            <tr class="text-align-center">
-              <th class="w-36">Name</th>
-              <th>Goals</th>
-              <th>MVP Votes</th>
-              <th>Clutch</th>
-            </tr>
-          </thead>
-          <tbody>
-            <!-- Check the team played -->
-            {% for player in fixture.players.all %}
-            
-            {% if player.team_played == 1 %}
+    <div class="collapse-content bg-base-200"> 
+      <div class="divider divider-vertical h-0"></div>
+      <div class="flex flex-row h-fit card bg-base-100 rounded-box justify-center">
 
-            <tr>
-              <td>{{player.person}}</td>
-              <td>{{player.goals}}</td>
-              <td>{{player.mvp_votes}}</td>
-              <td>{% if fixture.winner_team == 1 and fixture.diff > 1 and player.goals >= fixture.diff %}
-               
-                Yes
+        <div class="w-fit">
+            {% include 'partials/players_table.html' with team=1 %}
+        </div>
 
-                {% else %}
-                
-                No
+        <div class="divider divider-horizontal"></div>
 
-                {% endif %}
-                </td>
-            </tr>
+        <div class="w-fit">
+          {% include 'partials/players_table.html' with team=2 %}
+        </div>
 
-            {% endif %}
-            {% endfor %}
-
-          </tbody>
-        </table>
       </div>
-      <div class="divider divider-horizontal"></div>
-      <div
-        class="grid h-fit card bg-base-100 rounded-box place-items-center w-full"
-      >
-        <table class="table table-xs">
-          <thead>
-            <tr>
-              <th class="w-36">Name</th>
-              <th>Goals</th>
-              <th>MVP Votes</th>
-              <th>Clutch</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for player in fixture.players.all %}
-            <!-- Check the team played -->
-            {% if player.team_played == 2 %}
-            <tr>
-              <td>{{player.person}}</td>
-              <td>{{player.goals}}</td>
-              <td>{{player.mvp_votes}}</td>
-              <td>
-                {% if fixture.winner_team == 2 and fixture.diff > 1 and player.goals >= fixture.diff %}
-               
-                Yes
 
-                {% else %}
-                
-                No
-
-                {% endif %}
-                
-              </td>
-            </tr>
-            {% endif %}
-            <!--  -->
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
     </div>
+
   </div>
-</div>
 {% endfor %}
+</div>

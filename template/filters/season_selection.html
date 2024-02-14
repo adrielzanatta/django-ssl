@@ -1,9 +1,0 @@
-<div class="w-fit">
-  <h2>Season</h2>
-  <select class="select select-bordered bg-neutral rounded-xl" name="season">
-    {% for season in seasons.all %}
-    <option value="{{season.pk}}">{{ season.year }}</option>
-    {% endfor %}
-    <option value="all_seasons">All seasons</option>
-  </select>
-</div>

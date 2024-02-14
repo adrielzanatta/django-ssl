@@ -5,12 +5,16 @@ from django.db.models import (
     When,
     F,
     Sum,
-    Count,
     Q,
-    Avg,
-    FloatField,
-    ExpressionWrapper,
     Func,
+    Count,
+    Avg,
+    ExpressionWrapper,
+    FloatField,
+    OuterRef,
+    Subquery,
+    Prefetch,
+    IntegerField,
 )
 from django.db.models.functions import Cast
 from .models import Player, Season, Fixture
@@ -19,98 +23,97 @@ from .forms import FixtureForm, PlayerFormset, PlayerFormsetDetail
 # Create your views here.
 
 
-def seasons(request):
+def ranking(request):
     seasons = Season.objects.all()
     context = {"seasons": seasons}
-    return render(request, "rankings.html", context)
+    return render(request, "content.html", context)
 
 
 def ranking_table(request):
+    season = request.GET.get("filter_season")
+    if season == "all_seasons":
+        fixt_list = Fixture.objects.all()
+    else:
+        fixt_list = Fixture.objects.filter(season__pk=season)
 
-    # season = request.GET.get("season")
+    fixtures = fixt_list.annotate(
+        team_1=Sum("players__goals", filter=Q(players__team_played=1)),
+        team_2=Sum("players__goals", filter=Q(players__team_played=2)),
+        diff_real=(F("team_1") - F("team_2")),
+        winner_team=Case(
+            When(Q(diff_real__gt=0), then=Value(1)),
+            When(Q(diff_real__lt=0), then=Value(2)),
+            When(Q(diff_real=0), then=Value(0)),
+        ),
+    )
 
-    # if season == "all_seasons":
-    #     player_list = Player.objects.all()
-    #     fixt_list = Fixture.objects.all()
-    # else:
-    #     player_list = Player.objects.filter(fixture__season__pk=season)
-    #     fixt_list = Fixture.objects.filter(season__pk=season)
+    sqr = Subquery(fixtures.filter(players=OuterRef("pk")).values("winner_team"))
 
-    # fixtures = fixt_list.annotate(
-    #     team_1=Sum("players__goals", filter=Q(players__team_played=1)),
-    #     team_2=Sum("players__goals", filter=Q(players__team_played=2)),
-    #     diff_real=(F("team_1") - F("team_2")),
-    #     winner_team=Case(
-    #         When(Q(diff_real__gt=0), then=Value(1)),
-    #         When(Q(diff_real__lt=0), then=Value(2)),
-    #         When(Q(diff_real=0), then=Value(0)),
-    #     ),
-    # )
+    rankings = (
+        Player.objects.annotate(
+            points=Case(
+                When(
+                    team_played=sqr,
+                    then=Value(3),
+                ),
+                When(
+                    team_played=ExpressionWrapper(
+                        sqr - F("team_played"), output_field=IntegerField()
+                    ),
+                    then=Value(1),
+                ),
+                default=Value(0),
+            ),
+        )
+        .values("person__nickname")
+        .annotate(
+            Sum("points"),
+            Sum("goals"),
+            Count("fixture"),
+            Avg("goals"),
+            is_mvp__count=Count("is_mvp", filter=Q(is_mvp=True)),
+            wins=Count("fixture", filter=Q(points=3)),
+            ties=Count("fixture", filter=Q(points=1)),
+            losses=Count("fixture", filter=Q(points=0)),
+            pct_points=ExpressionWrapper(
+                (
+                    100
+                    * Cast(F("points__sum"), output_field=FloatField())
+                    / (Cast(F("fixture__count"), output_field=FloatField()) * 3)
+                ),
+                output_field=FloatField(),
+            ),
+        )
+        .order_by("-points__sum", "-goals__sum")
+    )
 
-    # fixt_points = player_list.annotate(
-    #     points=Case(
-    #         When(
-    #             team_played=F("fixtures__winner_team"),
-    #             then=Value(3),
-    #         ),
-    #         When(
-    #             fixture__winner_team=0,
-    #             then=Value(1),
-    #         ),
-    #         default=Value(0),
-    #     )
-    # )
+    attendance = request.GET.get("filter_attendance")
 
-    # rankings = (
-    #     fixt_points.values("person__nickname")
-    #     .annotate(
-    #         Sum("points"),
-    #         Sum("goals"),
-    #         Count("fixture"),
-    #         Avg("goals"),
-    #         is_mvp__count=Count("is_mvp", filter=Q(is_mvp=True)),
-    #         wins=Count("fixture", filter=Q(points=3)),
-    #         ties=Count("fixture", filter=Q(points=1)),
-    #         losses=Count("fixture", filter=Q(points=0)),
-    #         pct_points=ExpressionWrapper(
-    #             (
-    #                 100
-    #                 * Cast(F("points__sum"), output_field=FloatField())
-    #                 / (Cast(F("fixture__count"), output_field=FloatField()) * 3)
-    #             ),
-    #             output_field=FloatField(),
-    #         ),
-    #     )
-    #     .order_by("-points__sum", "-goals__sum")
-    # )
+    if attendance:
+        if season == "all_seasons":
+            count_fixtures = Fixture.objects.all()
+        else:
+            count_fixtures = Fixture.objects.filter(season__pk=season)
 
-    # attendance = request.GET.get("attendance")
+        count_fixtures = count_fixtures.aggregate(Count("id"))["id__count"]
 
-    # if attendance:
-    #     if season == "all_seasons":
-    #         count_fixtures = Fixture.objects.all()
-    #     else:
-    #         count_fixtures = Fixture.objects.filter(season__pk=season)
+        rankings = rankings.filter(fixture__count__gte=(count_fixtures // 2))
 
-    #     count_fixtures = count_fixtures.aggregate(Count("id"))["id__count"]
+    context = {"players": rankings}
 
-    #     rankings = rankings.filter(fixture__count__gte=(count_fixtures // 2))
-
-    # context = {"players": rankings}
-
-    context = {}
+    # context = {}
     return render(request, "partials/ranking_table.html", context)
 
 
 def fixtures(request):
     seasons = Season.objects.all()
     context = {"seasons": seasons}
-    return render(request, "fixtures.html", context)
+    return render(request, "content.html", context)
 
 
 def fixtures_list(request):
-    season = request.GET.get("season")
-
+    season = request.GET.get("filter_season")
+    print(season)
     if season == "all_seasons":
         fixtures = Fixture.objects.all()
     else:
@@ -183,6 +186,7 @@ def fixture_add(request):
             if form.is_valid():
                 instance = form.save()
                 formset = PlayerFormset(request.POST, instance=instance)
+
                 if formset.is_valid():
                     formset.save()
                 else:
@@ -202,4 +206,4 @@ def fixture_add(request):
             "player_formset": formset,
         }
 
-    return render(request, "fixture_add.html", context)
+    return render(request, "fixture_details.html", context)
