@@ -1,11 +1,12 @@
-<div class="w-full bg-base-200 rounded-xl overflow-y-scroll">
-  <table class="table table-lg">
+<div class="w-full bg-base-300 rounded-xl overflow-y-scroll">
+  <table class="table table-lg table-pin-rows">
     <thead>
-      <tr class="text-xl">
-        <th>NAME</th>
+      <tr class="bg-base-200 text-center">
+        <th class="w-1">#</th>
+        <th class="text-start">NAME</th>
         <th>GP</th>
         <th>PTS</th>
-        <th>PTS%</th>
+        <th>APP%</th>
         <th>GLS</th>
         <th>GLS/G</th>
         <th>W</th>
@@ -16,8 +17,9 @@
     </thead>
     <tbody>
       {% for player in players.all %}
-      <tr>
-        <td>{{player.person__nickname}}</td>
+      <tr class="text-center">
+        <td>{{ forloop.counter }}</td>
+        <td class="text-start">{{player.person__nickname}}</td>
         <td>{{player.fixture__count}}</td>
         <td>{{player.points__sum}}</td>
         <td>{{player.pct_points|floatformat:1}}</td>
