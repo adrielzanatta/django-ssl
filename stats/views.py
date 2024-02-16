@@ -36,30 +36,16 @@ def ranking_table(request):
     else:
         fixt_list = Fixture.objects.filter(season__pk=season)
 
-    fixtures = fixt_list.annotate(
-        team_1=Sum("players__goals", filter=Q(players__team_played=1)),
-        team_2=Sum("players__goals", filter=Q(players__team_played=2)),
-        diff_real=(F("team_1") - F("team_2")),
-        winner_team=Case(
-            When(Q(diff_real__gt=0), then=Value(1)),
-            When(Q(diff_real__lt=0), then=Value(2)),
-            When(Q(diff_real=0), then=Value(0)),
-        ),
-    )
-
-    sqr = Subquery(fixtures.filter(players=OuterRef("pk")).values("winner_team"))
-
     rankings = (
-        Player.objects.annotate(
+        Player.objects.filter(fixture__in=fixt_list)
+        .annotate(
             points=Case(
                 When(
-                    team_played=sqr,
+                    team_played=F("fixture__winner_team"),
                     then=Value(3),
                 ),
                 When(
-                    team_played=ExpressionWrapper(
-                        sqr - F("team_played"), output_field=IntegerField()
-                    ),
+                    fixture__winner_team=0,
                     then=Value(1),
                 ),
                 default=Value(0),
@@ -101,7 +87,6 @@ def ranking_table(request):
 
     context = {"players": rankings}
 
-    # context = {}
     return render(request, "partials/ranking_table.html", context)
 
 
@@ -113,26 +98,25 @@ def fixtures(request):
 
 def fixtures_list(request):
     season = request.GET.get("filter_season")
-    print(season)
     if season == "all_seasons":
         fixtures = Fixture.objects.all()
     else:
         fixtures = Fixture.objects.filter(season__pk=season)
 
-    fixtures = fixtures.annotate(
-        team_1=Sum("players__goals", filter=Q(players__team_played=1)),
-        team_2=Sum("players__goals", filter=Q(players__team_played=2)),
-        diff_real=(F("team_1") - F("team_2")),
-        winner_team=Case(
-            When(Q(diff_real__gt=0), then=Value(1)),
-            When(Q(diff_real__lt=0), then=Value(2)),
-            When(Q(diff_real=0), then=Value(0)),
-        ),
-        diff=Func((F("team_1") - F("team_2")), function="ABS"),
-    ).order_by("-date", "-number")
+    fixtures = fixtures.order_by("-date", "-number")
 
     context = {"fixtures": fixtures}
     return render(request, "partials/fixtures_list.html", context)
+
+
+def get_winner(team1, team2):
+    diff = team1 - team2
+    if diff > 0:
+        return 1
+    elif diff < 0:
+        return 2
+    else:
+        return 0
 
 
 def fixture_details(request, pk):
@@ -145,33 +129,52 @@ def fixture_details(request, pk):
             return redirect("fixtures")
 
         elif "save" in request.POST:
-            fixture = get_object_or_404(Fixture, id=pk)
-            form = FixtureForm(request.POST, instance=fixture)
+
+            fixt = get_object_or_404(Fixture, id=pk)
+            form = FixtureForm(request.POST, instance=fixt)
+            formset = PlayerFormsetDetail(request.POST, instance=fixt)
 
             if form.is_valid():
-                instance = form.save()
-                formset = PlayerFormsetDetail(request.POST, instance=instance)
+                fixture = form.save(commit=False)
 
-                for form in formset:
+                team_1_goals, team_2_goals = 0, 0
 
-                    if form.is_valid():
-                        form.save()
-                    else:
-                        formset = PlayerFormsetDetail(instance=instance)
+                if formset.is_valid():
+                    formset.save()
 
-                return redirect("fixtures")
+                    for f in formset:
+                        team_played = f.cleaned_data.get("team_played")
+                        goals = f.cleaned_data.get("goals")
+
+                        if team_played == 1:
+                            team_1_goals += goals
+                        elif team_played == 2:
+                            team_2_goals += goals
+
+                    fixture.team_1_goals = team_1_goals
+                    fixture.team_2_goals = team_2_goals
+                    fixture.diff = abs(team_1_goals - team_2_goals)
+                    fixture.winner_team = get_winner(team_1_goals, team_2_goals)
+                    fixture.save()
+
+                else:
+
+                    formset = PlayerFormsetDetail(instance=fixt)
 
             else:
-                form = FixtureForm(instance=fixture)
+                fixt_form = FixtureForm(instance=fixt)
+
+            return redirect("fixtures")
+
     else:
-        fixture = get_object_or_404(Fixture, id=pk)
-        fixture_form = FixtureForm(instance=fixture)
-        player_formset = PlayerFormsetDetail(instance=fixture)
+        fixt = get_object_or_404(Fixture, id=pk)
+        fixture_form = FixtureForm(instance=fixt)
+        player_formset = PlayerFormsetDetail(instance=fixt)
 
         context = {
             "fixture_form": fixture_form,
             "player_formset": player_formset,
-            "fixture": fixture,
+            "fixture": fixt,
         }
 
         return render(request, "fixture_details.html", context)
@@ -183,20 +186,38 @@ def fixture_add(request):
 
         if "save" in request.POST:
             form = FixtureForm(request.POST)
+            formset = PlayerFormset(request.POST, instance=fixture)
+
             if form.is_valid():
-                instance = form.save()
-                formset = PlayerFormset(request.POST, instance=instance)
+                fixture = form.save(commit=False)
+
+                team_1_goals, team_2_goals = 0, 0
 
                 if formset.is_valid():
                     formset.save()
+
+                    for f in formset:
+                        team_played = f.cleaned_data.get("team_played")
+                        goals = f.cleaned_data.get("goals")
+
+                        if team_played == 1:
+                            team_1_goals += goals
+                        elif team_played == 2:
+                            team_2_goals += goals
+
+                    fixture.team_1_goals = team_1_goals
+                    fixture.team_2_goals = team_2_goals
+                    fixture.diff = abs(team_1_goals - team_2_goals)
+                    fixture.winner_team = get_winner(team_1_goals, team_2_goals)
+                    fixture.save()
+
                 else:
-                    formset = PlayerFormset(instance=instance)
+                    formset = PlayerFormset(instance=fixture)
 
                 return redirect("fixtures")
 
             else:
                 form = FixtureForm()
-
     else:
         formset = PlayerFormset()
         form = FixtureForm()

@@ -9,14 +9,14 @@
           
           <div class="flex justify-between place-items-baseline center w-full">
             <span class="text-lg">Drafter Team</span>
-            <span class="text-3xl">{{ fixture.team_1 }}</span>
+            <span class="text-3xl">{{ fixture.team_1_goals }}</span>
           </div>
 
           <div class="divider divider-vertical h-0"></div>
           
           <div class="flex justify-between align-top w-full">
             <span class="text-lg">Away Team</span>
-            <span class="text-3xl">{{ fixture.team_2 }}</span>          
+            <span class="text-3xl">{{ fixture.team_2_goals }}</span>          
           </div>
 
         </div>
@@ -32,7 +32,8 @@
 
           <span class="text text-sm">{{fixture.date}}</span>
           <span class="text text-sm">Drafter: {{fixture.drafter}}</span>
-
+          <span class="text text-sm">Winner Team: {{fixture.winner_team}}</span>
+          
         </div>
       </div>
 

@@ -40,23 +40,27 @@
                             <th>Player</th>
                             <th>Goals</th>
                             <th>MVP Votes</th>
+                            <th>Delete</th>
                         </tr>
                     </thead>
                     <tbody>
                         {{player_formset.management_form}}
-                        {% for form in player_formset %}
-                            <tr>
-                                <td>{% render_field form.team_played class='select select-xs text-center w-12' %}</td>
-                                <td>{% render_field form.person class='select select-xs w-fit' %}</td>
-                                <td>{% render_field form.goals class='input input-xs text-center w-20' %}</td>
-                                <td>{% render_field form.mvp_votes class='input input-xs text-center w-20' %}</td>
-                            </tr>
-                        
-                        {% endfor %}
-                        
+                            {% for form in player_formset %}
+                                <tr>
+                                    {% for hidden in form.hidden_fields %}
+                                        {{ hidden }}
+                                    {% endfor %}
+                                    <td>{% render_field form.team_played class='select select-xs text-center w-12' %}</td>
+                                    <td>{% render_field form.person class='select select-xs w-fit' %}</td>
+                                    <td>{% render_field form.goals class='input input-xs text-center w-20' %}</td>
+                                    <td>{% render_field form.mvp_votes class='input input-xs text-center w-20' %}</td>
+                                    <td>{% render_field form.DELETE class='checkbox input-xs text-center' %}</td>
+                                </tr>
+                            {% endfor %}
                     </tbody>
                 </table>
             </div>
+            <hr class="">
             <div class="flex flex-row justify-end gap-4">
                 <a href="{% url 'fixtures' %}" class="btn" >
                     Cancel

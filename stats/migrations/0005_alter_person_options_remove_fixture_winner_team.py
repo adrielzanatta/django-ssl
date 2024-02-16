@@ -6,16 +6,16 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('stats', '0004_remove_player_points_earned_alter_player_goals_and_more'),
+        ("stats", "0004_remove_player_points_earned_alter_player_goals_and_more"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='person',
-            options={'ordering': ['nickname']},
+            name="person",
+            options={"ordering": ["nickname"]},
         ),
         migrations.RemoveField(
-            model_name='fixture',
-            name='winner_team',
+            model_name="fixture",
+            name="winner_team",
         ),
     ]

@@ -16,15 +16,10 @@ class FixtureForm(ModelForm):
         }
 
 
-class BasePlayerFormset(BaseInlineFormSet):
-    pass
-
-
 PlayerFormset = inlineformset_factory(
     Fixture,
     Player,
     fields="__all__",
-    formset=BasePlayerFormset,
     extra=15,
     can_delete=False,
 )
@@ -33,7 +28,6 @@ PlayerFormsetDetail = inlineformset_factory(
     Fixture,
     Player,
     fields="__all__",
-    formset=BasePlayerFormset,
     extra=1,
-    can_delete=False,
+    can_delete=True,
 )

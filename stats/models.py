@@ -29,6 +29,10 @@ class Fixture(models.Model):
     drafter = models.ForeignKey(
         Person, on_delete=models.PROTECT, related_name="fixtures"
     )
+    winner_team = models.PositiveSmallIntegerField(blank=True, null=True)
+    team_1_goals = models.PositiveSmallIntegerField(blank=True, null=True)
+    team_2_goals = models.PositiveSmallIntegerField(blank=True, null=True)
+    diff = models.SmallIntegerField(blank=True, null=True)
 
     def __str__(self):
         return f"Season: {self.season} - Round: {self.number} - Date: {self.date}"
@@ -46,7 +50,7 @@ class Fixture(models.Model):
 
 
 class Player(models.Model):
-    teams = {1: 1, 2: 2}
+    teams = {"": "-", 1: 1, 2: 2}
     team_played = models.PositiveSmallIntegerField(choices=teams)
     fixture = models.ForeignKey(
         Fixture, on_delete=models.CASCADE, related_name="players"
