@@ -186,15 +186,14 @@ def fixture_add(request):
 
         if "save" in request.POST:
             form = FixtureForm(request.POST)
-            formset = PlayerFormset(request.POST, instance=fixture)
 
             if form.is_valid():
                 fixture = form.save(commit=False)
-
-                team_1_goals, team_2_goals = 0, 0
+                formset = PlayerFormset(request.POST, instance=fixture)
 
                 if formset.is_valid():
-                    formset.save()
+
+                    team_1_goals, team_2_goals = 0, 0
 
                     for f in formset:
                         team_played = f.cleaned_data.get("team_played")
@@ -210,9 +209,7 @@ def fixture_add(request):
                     fixture.diff = abs(team_1_goals - team_2_goals)
                     fixture.winner_team = get_winner(team_1_goals, team_2_goals)
                     fixture.save()
-
-                else:
-                    formset = PlayerFormset(instance=fixture)
+                    formset.save()
 
                 return redirect("fixtures")
 
