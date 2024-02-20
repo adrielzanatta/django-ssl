@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import Sum
 
 
 # Create your models here.
@@ -29,10 +30,6 @@ class Fixture(models.Model):
     drafter = models.ForeignKey(
         Person, on_delete=models.PROTECT, related_name="fixtures"
     )
-    winner_team = models.PositiveSmallIntegerField(blank=True, null=True)
-    team_1_goals = models.PositiveSmallIntegerField(blank=True, null=True)
-    team_2_goals = models.PositiveSmallIntegerField(blank=True, null=True)
-    diff = models.SmallIntegerField(blank=True, null=True)
 
     def __str__(self):
         return f"Season: {self.season} - Round: {self.number} - Date: {self.date}"
@@ -47,6 +44,30 @@ class Fixture(models.Model):
             self.number = self.get_round(self.season)
 
         super().save(**kwargs)
+
+    @property
+    def team_1_goals(self):
+        goals = self.players.filter(team_played=1).aggregate(Sum("goals"))["goals__sum"]
+        return goals
+
+    @property
+    def team_2_goals(self):
+        goals = self.players.filter(team_played=2).aggregate(Sum("goals"))["goals__sum"]
+        return goals
+
+    @property
+    def diff(self):
+        diff = abs(self.team_1_goals - self.team_2_goals)
+        return diff
+
+    @property
+    def winner_team(self):
+        if self.team_1_goals == self.team_2_goals:
+            return 0
+        elif self.team_1_goals > self.team_2_goals:
+            return 1
+        else:
+            return 2
 
 
 class Player(models.Model):

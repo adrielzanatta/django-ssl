@@ -128,42 +128,19 @@ def fixture_details(request, pk):
             fixture.delete()
             return redirect("fixtures")
 
-        elif "save" in request.POST:
-
+        if "save" in request.POST:
             fixt = get_object_or_404(Fixture, id=pk)
             form = FixtureForm(request.POST, instance=fixt)
             formset = PlayerFormsetDetail(request.POST, instance=fixt)
-
             if form.is_valid():
                 fixture = form.save(commit=False)
-
-                team_1_goals, team_2_goals = 0, 0
-
                 if formset.is_valid():
                     formset.save()
-
-                    for f in formset:
-                        team_played = f.cleaned_data.get("team_played")
-                        goals = f.cleaned_data.get("goals")
-
-                        if team_played == 1:
-                            team_1_goals += goals
-                        elif team_played == 2:
-                            team_2_goals += goals
-
-                    fixture.team_1_goals = team_1_goals
-                    fixture.team_2_goals = team_2_goals
-                    fixture.diff = abs(team_1_goals - team_2_goals)
-                    fixture.winner_team = get_winner(team_1_goals, team_2_goals)
                     fixture.save()
-
                 else:
-
                     formset = PlayerFormsetDetail(instance=fixt)
-
             else:
-                fixt_form = FixtureForm(instance=fixt)
-
+                form = FixtureForm(instance=fixt)
             return redirect("fixtures")
 
     else:
@@ -183,36 +160,15 @@ def fixture_details(request, pk):
 def fixture_add(request):
 
     if request.method == "POST":
-
         if "save" in request.POST:
             form = FixtureForm(request.POST)
-
             if form.is_valid():
                 fixture = form.save(commit=False)
                 formset = PlayerFormset(request.POST, instance=fixture)
-
                 if formset.is_valid():
-
-                    team_1_goals, team_2_goals = 0, 0
-
-                    for f in formset:
-                        team_played = f.cleaned_data.get("team_played")
-                        goals = f.cleaned_data.get("goals")
-
-                        if team_played == 1:
-                            team_1_goals += goals
-                        elif team_played == 2:
-                            team_2_goals += goals
-
-                    fixture.team_1_goals = team_1_goals
-                    fixture.team_2_goals = team_2_goals
-                    fixture.diff = abs(team_1_goals - team_2_goals)
-                    fixture.winner_team = get_winner(team_1_goals, team_2_goals)
                     fixture.save()
                     formset.save()
-
                 return redirect("fixtures")
-
             else:
                 form = FixtureForm()
     else:
