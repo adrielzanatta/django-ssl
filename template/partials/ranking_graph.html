@@ -1,0 +1,39 @@
+
+{% block content %}
+
+<div class="flex w-full h-full justify-center">
+    <div class="flex w-full h-full flex-1">
+        <canvas id="myChart" style="position: relative; height:40vh; width:80vw"></canvas>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    var ctx = document.getElementById('myChart');
+  
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: [{% for item in rounds %}'{{item.fixture__number}}',{% endfor %}],
+        
+        datasets: [{% for item in names %}{
+          label: '{{item.person__nickname}}',
+          data: [{% for p in points %}
+                    {% if p.person__nickname == item.person__nickname %}{{p.cum_points}},{% endif %}
+                {% endfor %}],
+          borderWidth: 1
+        },{% endfor %}]
+        
+      },
+      options: {
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        },
+      }
+    });
+  </script>
+  
+{% endblock %}

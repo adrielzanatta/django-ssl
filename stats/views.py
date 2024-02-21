@@ -6,21 +6,17 @@ from django.db.models import (
     F,
     Sum,
     Q,
-    Func,
     Count,
     Avg,
     ExpressionWrapper,
     FloatField,
-    OuterRef,
-    Subquery,
-    Prefetch,
-    IntegerField,
+    Window,
+    RowRange,
 )
 from django.db.models.functions import Cast
+from stats.forms import FixtureForm, PlayerFormset, PlayerFormsetDetail
 from .models import Player, Season, Fixture
 import math
-
-# Create your views here.
 
 
 def ranking(request):
@@ -40,14 +36,8 @@ def ranking_table(request):
         Player.objects.filter(fixture__in=fixt_list)
         .annotate(
             points=Case(
-                When(
-                    team_played=F("fixture__winner_team"),
-                    then=Value(3),
-                ),
-                When(
-                    fixture__winner_team=0,
-                    then=Value(1),
-                ),
+                When(team_played=F("fixture__winner_team"), then=Value(3)),
+                When(fixture__winner_team=0, then=Value(1)),
                 default=Value(0),
             ),
         )
@@ -72,7 +62,7 @@ def ranking_table(request):
         )
         .order_by("-points__sum", "-goals__sum")
     )
-
+    print(rankings)
     attendance = request.GET.get("filter_attendance")
 
     if attendance:
@@ -88,6 +78,51 @@ def ranking_table(request):
     context = {"players": rankings}
 
     return render(request, "partials/ranking_table.html", context)
+
+
+def graph(request):
+    seasons = Season.objects.all()
+    context = {"seasons": seasons}
+    return render(request, "content.html", context)
+
+
+def graph_positions(request):
+    season = request.GET.get("filter_season")
+    if season == "all_seasons":
+        fixt_list = Fixture.objects.all()
+    else:
+        fixt_list = Fixture.objects.filter(season__pk=season)
+
+    qs = (
+        Player.objects.filter(fixture__in=fixt_list)
+        .annotate(
+            points=Case(
+                When(team_played=F("fixture__winner_team"), then=Value(3)),
+                When(fixture__winner_team=0, then=Value(1)),
+                default=Value(0),
+            ),
+        )
+        .annotate(
+            cum_points=Window(
+                expression=Sum("points"),
+                partition_by=F("person__nickname"),
+                order_by=F("fixture__number").asc(),
+            )
+        )
+    )
+    rounds = qs.values("fixture__number").distinct()
+    names = qs.values("person__nickname").distinct()
+    points = qs.values("person__nickname", "cum_points", "fixture__number").order_by(
+        "fixture__number"
+    )
+
+    context = {
+        "names": names,
+        "rounds": rounds,
+        "points": points,
+    }
+
+    return render(request, "partials/ranking_graph.html", context)
 
 
 def fixtures(request):

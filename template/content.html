@@ -9,23 +9,20 @@
       class="menu mt-6 menu-horizontal lg:menu-vertical text-lg flex flex-row lg:flex-col align-middle justify-evenly lg:justify-start bg-base-200 rounded-box h-fit"
       hx-boost="true"
     >
-      <li><a href="{%url 'ranking' %}">Rankings</a></li>
-      <li><a href="{%url 'fixtures' %}">Fixtures</a></li>
+      <li><a href="{%url 'ranking' %}">Ranking Table</a></li>
+      <li><a href="{%url 'graph' %}">Ranking Graph</a></li>
+      <li><a href="{%url 'fixtures' %}">Fixtures List</a></li>     
     </div>
 
 
 
-
     <div id='content' class="flex justify-center px-8 h-5/6 order-last lg:order-none lg:my-6">
-
-      {% if 'ranking' in request.path %}
-
+      {% if 'graph' in request.path %}
+          {% include 'partials/ranking_graph.html' %}
+      {% elif 'ranking' in request.path %}
           {% include 'partials/ranking_table.html' %}
-
       {% elif 'fixture' in request.path %}
-      
           {% include 'partials/fixtures_list.html' %}
-      
       {% endif %}
     </div>
 
@@ -47,6 +44,8 @@
         hx-target="#content"
         {% if 'ranking' in request.path %}
           hx-get="{% url 'ranking_table' %}"
+        {% elif 'graph' in request.path %}
+          hx-get="{% url 'graph_positions' %}"
         {% elif 'fixture' in request.path %}
           hx-get="{% url 'fixtures_list' %}"
         {% endif %}
@@ -64,7 +63,7 @@
         </div>
 
         <!-- Over 50% attendace filter -->
-        {% if 'ranking' in request.path %}
+        {% if 'ranking' or 'graph' in request.path %}
           <div class="flex align-middle w-44">
             <label class="label cursor-pointer">
               <span class="label-text">Only players with 50% attendance</span>

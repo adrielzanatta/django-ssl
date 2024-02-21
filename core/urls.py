@@ -24,6 +24,8 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("ranking/", views.ranking, name="ranking"),
     path("ranking_table/", views.ranking_table, name="ranking_table"),
+    path("graph/", views.graph, name="graph"),
+    path("graph_positions/", views.graph_positions, name="graph_positions"),
     path("fixtures/", views.fixtures, name="fixtures"),
     path("fixtures_list/", views.fixtures_list, name="fixtures_list"),
     path("fixtures/<int:pk>/", views.fixture_details, name="fixture_details"),

@@ -36,13 +36,16 @@ class Fixture(models.Model):
         return f"Season: {self.season} - Round: {self.number} - Date: {self.date}"
 
     def get_round(self, season: Season):
-        number_of_fixtures = Fixture.objects.filter(season__year=season.year).count()
-        actual_fixture = number_of_fixtures + 1
-        return actual_fixture
+        if self._state.adding:
+            number_of_fixtures = Fixture.objects.filter(
+                season__year=season.year
+            ).count()
+            actual_fixture = number_of_fixtures + 1
+            return actual_fixture
 
     def save(self, *args, **kwargs):
-        if self._state.adding:
-            self.number = self.get_round(self.season)
+
+        self.number = self.get_round(self.season)
         super().save(*args, **kwargs)
         self.winner_team = self.winner
         super().save(*args, **kwargs)
