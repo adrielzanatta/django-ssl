@@ -21,7 +21,7 @@
           {% endif %}              
         </td>
         <td class="w-14">
-          {% if fixture.winner_team == player.team_played and fixture.diff > 1 and player.goals >= fixture.diff %} 
+          {% if fixture.winner == player.team_played and fixture.diff > 1 and player.goals >= fixture.diff %} 
             Yes
           {% else %}
             No

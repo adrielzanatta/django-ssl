@@ -30,6 +30,7 @@ class Fixture(models.Model):
     drafter = models.ForeignKey(
         Person, on_delete=models.PROTECT, related_name="fixtures"
     )
+    winner_team = models.PositiveSmallIntegerField(blank=True, null=True)
 
     def __str__(self):
         return f"Season: {self.season} - Round: {self.number} - Date: {self.date}"
@@ -39,11 +40,12 @@ class Fixture(models.Model):
         actual_fixture = number_of_fixtures + 1
         return actual_fixture
 
-    def save(self, **kwargs):
+    def save(self, *args, **kwargs):
         if self._state.adding:
             self.number = self.get_round(self.season)
-
-        super().save(**kwargs)
+        super().save(*args, **kwargs)
+        self.winner_team = self.winner
+        super().save(*args, **kwargs)
 
     @property
     def team_1_goals(self):
@@ -61,7 +63,7 @@ class Fixture(models.Model):
         return diff
 
     @property
-    def winner_team(self):
+    def winner(self):
         if self.team_1_goals == self.team_2_goals:
             return 0
         elif self.team_1_goals > self.team_2_goals:

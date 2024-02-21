@@ -18,7 +18,7 @@ from django.db.models import (
 )
 from django.db.models.functions import Cast
 from .models import Player, Season, Fixture
-from .forms import FixtureForm, PlayerFormset, PlayerFormsetDetail
+import math
 
 # Create your views here.
 
@@ -83,7 +83,7 @@ def ranking_table(request):
 
         count_fixtures = count_fixtures.aggregate(Count("id"))["id__count"]
 
-        rankings = rankings.filter(fixture__count__gte=(count_fixtures // 2))
+        rankings = rankings.filter(fixture__count__gte=math.ceil(count_fixtures / 2))
 
     context = {"players": rankings}
 
