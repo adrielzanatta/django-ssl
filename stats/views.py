@@ -16,6 +16,7 @@ from django.db.models import (
 from django.db.models.functions import Cast
 from stats.forms import FixtureForm, PlayerFormset, PlayerFormsetDetail
 from .models import Player, Season, Fixture
+from .utils import get_line_chart_data
 import math
 
 
@@ -108,20 +109,12 @@ def graph_positions(request):
                 partition_by=F("person__nickname"),
                 order_by=F("fixture__number").asc(),
             )
-        )
-    )
-    rounds = qs.values("fixture__number").distinct()
-    names = qs.values("person__nickname").distinct()
-    points = qs.values("person__nickname", "cum_points", "fixture__number").order_by(
-        "fixture__number"
+        ).values('person__nickname', 'cum_points', 'fixture__number')
     )
 
-    context = {
-        "names": names,
-        "rounds": rounds,
-        "points": points,
-    }
+    context = get_line_chart_data(qs=qs, label='person__nickname', x='fixture__number', y='cum_points',)
 
+    
     return render(request, "partials/ranking_graph.html", context)
 
 
@@ -142,16 +135,6 @@ def fixtures_list(request):
 
     context = {"fixtures": fixtures}
     return render(request, "partials/fixtures_list.html", context)
-
-
-def get_winner(team1, team2):
-    diff = team1 - team2
-    if diff > 0:
-        return 1
-    elif diff < 0:
-        return 2
-    else:
-        return 0
 
 
 def fixture_details(request, pk):
