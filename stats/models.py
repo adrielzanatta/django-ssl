@@ -1,5 +1,6 @@
 from django.db import models
 from django.db.models import Sum
+from django.db.models.signals import post_save
 
 
 # Create your models here.
@@ -36,28 +37,34 @@ class Fixture(models.Model):
         return f"Season: {self.season} - Round: {self.number} - Date: {self.date}"
 
     def get_round(self, season: Season):
-        if self._state.adding:
-            number_of_fixtures = Fixture.objects.filter(
-                season__year=season.year
-            ).count()
-            actual_fixture = number_of_fixtures + 1
-            return actual_fixture
+        number_of_fixtures = Fixture.objects.filter(season__year=season.year).count()
+        if number_of_fixtures is None:
+            return 1
+        else:
+            return number_of_fixtures + 1
 
     def save(self, *args, **kwargs):
-
-        self.number = self.get_round(self.season)
-        super().save(*args, **kwargs)
+        if self._state.adding:
+            self.number = self.get_round(self.season)
         self.winner_team = self.winner
-        super().save(*args, **kwargs)
+        super(Fixture, self).save(*args, **kwargs)
 
     @property
     def team_1_goals(self):
-        goals = self.players.filter(team_played=1).aggregate(Sum("goals"))["goals__sum"]
+        goals = (
+            Player.objects.filter(fixture=self.id)
+            .filter(team_played=1)
+            .aggregate(Sum("goals"))["goals__sum"]
+        )
         return goals
 
     @property
     def team_2_goals(self):
-        goals = self.players.filter(team_played=2).aggregate(Sum("goals"))["goals__sum"]
+        goals = (
+            Player.objects.filter(fixture=self.id)
+            .filter(team_played=2)
+            .aggregate(Sum("goals"))["goals__sum"]
+        )
         return goals
 
     @property

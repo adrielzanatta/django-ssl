@@ -63,7 +63,6 @@ def ranking_table(request):
         )
         .order_by("-points__sum", "-goals__sum")
     )
-    print(rankings)
     attendance = request.GET.get("filter_attendance")
 
     if attendance:
@@ -103,18 +102,24 @@ def graph_positions(request):
                 default=Value(0),
             ),
         )
+        .order_by("fixture__number")
         .annotate(
             cum_points=Window(
                 expression=Sum("points"),
                 partition_by=F("person__nickname"),
                 order_by=F("fixture__number").asc(),
             )
-        ).values('person__nickname', 'cum_points', 'fixture__number')
+        )
+        .values("person__nickname", "cum_points", "fixture__number")
     )
 
-    context = get_line_chart_data(qs=qs, label='person__nickname', x='fixture__number', y='cum_points',)
+    context = get_line_chart_data(
+        qs=qs,
+        label="person__nickname",
+        x="fixture__number",
+        y="cum_points",
+    )
 
-    
     return render(request, "partials/ranking_graph.html", context)
 
 
@@ -181,11 +186,12 @@ def fixture_add(request):
         if "save" in request.POST:
             form = FixtureForm(request.POST)
             if form.is_valid():
-                fixture = form.save(commit=False)
+                fixture = form.save()
                 formset = PlayerFormset(request.POST, instance=fixture)
                 if formset.is_valid():
-                    fixture.save()
                     formset.save()
+                    fixture.save()
+
                 return redirect("fixtures")
             else:
                 form = FixtureForm()

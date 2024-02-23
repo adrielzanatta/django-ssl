@@ -17,18 +17,28 @@
       data: {
         labels: {{rounds}},
         
-        datasets:[{
-            label: [1],
-            data: [1,2,3],
+        datasets:[{% for label, point in labels_points %}{
+            label: '{{label}}',
+            data: {{point}},
             borderWidth: 1
-          },]
-        
+          },{% endfor %}]
       },
       options: {
+        responsive: true,
         scales: {
           y: {
             beginAtZero: true
           }
+        },
+        elements:{
+          stepped: true
+        },
+        plugins: {
+          legend: {
+            position: 'bottom',
+            align: 'start',
+            reverse: false,
+          },
         },
       }
     });

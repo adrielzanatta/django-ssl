@@ -63,7 +63,8 @@
         </div>
 
         <!-- Over 50% attendace filter -->
-        {% if 'ranking' or 'graph' in request.path %}
+        {% if 'fixture' in request.path %}
+        {% else %}
           <div class="flex align-middle w-44">
             <label class="label cursor-pointer">
               <span class="label-text">Only players with 50% attendance</span>
