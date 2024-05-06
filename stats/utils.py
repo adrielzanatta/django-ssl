@@ -1,4 +1,4 @@
-def get_line_chart_data(qs, label, x, y):
+def get_line_chart_cumpoints(qs, label, x, y):
     labels = set(item[label] for item in qs)
     labels = list(labels)
     max_rounds = max([item[x] for item in qs])

@@ -1,47 +1,10 @@
 
 {% block content %}
 
-<div class="flex w-full h-full justify-center">
-    <div class="flex w-full h-full flex-1">
-        <canvas id="myChart" style="position: relative; height:40vh; width:80vw"></canvas>
-    </div>
+<div class="flex flex-col lg:flex-row">
+   
+  {{chart_cumpoints|safe}}
+  {{chart_cumgoals|safe}}
+
 </div>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<script>
-    var ctx = document.getElementById('myChart');
-  
-    new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: {{rounds}},
-        
-        datasets:[{% for label, point in labels_points %}{
-            label: '{{label}}',
-            data: {{point}},
-            borderWidth: 1
-          },{% endfor %}]
-      },
-      options: {
-        responsive: true,
-        scales: {
-          y: {
-            beginAtZero: true
-          }
-        },
-        elements:{
-          stepped: true
-        },
-        plugins: {
-          legend: {
-            position: 'bottom',
-            align: 'start',
-            reverse: false,
-          },
-        },
-      }
-    });
-  </script>
-  
 {% endblock %}

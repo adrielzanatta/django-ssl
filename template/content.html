@@ -1,12 +1,12 @@
 {% extends 'base.html' %} 
 {% block content %}
 
-  <div class="flex flex-col lg:flex-row lg:justify-evenly lg:align-middle h-dvh">
+  <div class="flex flex-col">
     
 
     <div
       id="menu"
-      class="menu mt-6 menu-horizontal lg:menu-vertical text-lg flex flex-row lg:flex-col align-middle justify-evenly lg:justify-start bg-base-200 rounded-box h-fit"
+      class="menu mt-6 menu-horizontal text-lg flex flex-row align-middle justify-evenly bg-base-200 rounded-box h-fit"
       hx-boost="true"
     >
       <li><a href="{%url 'ranking' %}">Ranking Table</a></li>
@@ -16,7 +16,7 @@
 
 
 
-    <div id='content' class="flex justify-center px-8 h-5/6 order-last lg:order-none lg:my-6">
+    <div id='content' class="flex justify-center px-8 h-5/6 order-last">
       {% if 'graph' in request.path %}
           {% include 'partials/ranking_graph.html' %}
       {% elif 'ranking' in request.path %}
@@ -27,18 +27,10 @@
     </div>
 
 
-    <div class="flex flex-row my-6 lg:flex-col gap-8 justify-evenly lg:justify-start lg:w-44">
-      
-      {% if 'fixture' in request.path %}
-        <div class="flex order-last lg:order-none flex-1 lg:flex-none items-center justify-center">
-          <a role='button' class="btn btn-success lg:w-full" hx-boost=True href="{% url 'fixture_add' %}">
-              + Add fixture
-          </a>
-        </div>
-      {% endif %}
+    <div class="flex flex-row my-6 gap-8 justify-around">
       
       <form
-        class="form-control flex flex-row flex-1 lg:flex-none justify-evenly order-1 lg:order-none lg:justify-start lg:flex-col gap-8"
+        class="form-control flex flex-row justify-between gap-8"
         hx-include="this"
         hx-trigger="change, load from:input"
         hx-target="#content"
@@ -52,7 +44,7 @@
       >
         
         <!-- Season selection filter -->
-        <div class="flex items-center lg:w-full gap-2">
+        <div class="flex items-center gap-2">
           <span class="text text-lg">Season</span>
           <select class="select select-sm select-bordered bg-neutral rounded-xl w-fit" name="filter_season">
             {% for season in seasons.all %}
@@ -74,7 +66,16 @@
         {% endif %}
         
       </form>
-    </div>
 
+      {% if 'fixture' in request.path %}
+      <div class="flex order-last items-center justify-center">
+        <a role='button' class="btn btn-success" hx-boost=True href="{% url 'fixture_add' %}">
+            + Add fixture
+        </a>
+      </div>
+    {% endif %}
+
+    </div>
+  
   </div> 
 {% endblock %}
