@@ -12,16 +12,16 @@
     <tbody>
       <tr class="text-center">
         <td class="w-24 text-start">{{player.person}}</td>
-        <td class="w-14 tex">{{player.goals}}</td>
+        <td class="w-14 text">{{player.goals}}</td>
         <td class="w-14">
-          {% if player.mvp_votes >= 3 %} 
+          {% if player.mvp_votes >= 3 %}
             Yes 
-          {% else %} 
+          {% else %}
             No 
-          {% endif %}              
+          {% endif %}
         </td>
         <td class="w-14">
-          {% if fixture.winner == player.team_played and fixture.diff > 1 and player.goals >= fixture.diff %} 
+          {% if fixture.winner == player.team_played and fixture.diff > 1 and player.goals >= fixture.diff %}
             Yes
           {% else %}
             No

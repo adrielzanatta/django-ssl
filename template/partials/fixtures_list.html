@@ -8,14 +8,14 @@
         <div class="flex flex-col justify-center items-end flex-1">
           
           <div class="flex justify-between place-items-baseline center w-full">
-            <span class="text-lg">Drafter Team</span>
+            {% include 'partials/team_name.html' with team=1 %} 
             <span class="text-3xl">{{ fixture.team_1_goals }}</span>
           </div>
 
           <div class="divider divider-vertical h-0"></div>
           
           <div class="flex justify-between align-top w-full">
-            <span class="text-lg">Away Team</span>
+            {% include 'partials/team_name.html' with team=2 %}
             <span class="text-3xl">{{ fixture.team_2_goals }}</span>          
           </div>
 

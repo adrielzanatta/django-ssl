@@ -81,6 +81,15 @@ class Fixture(models.Model):
         else:
             return 2
 
+    @property
+    def drafter_team(self):
+        played = Player.objects.filter(fixture=self.id, person=self.drafter).first()
+
+        if played == None:
+            return 0
+
+        return played.team_played
+
 
 class Player(models.Model):
     teams = {"": "-", 1: 1, 2: 2}
