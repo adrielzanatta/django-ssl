@@ -1,6 +1,5 @@
 from django.contrib import admin
 from stats.models import Fixture, Person, Player, Season
-from django.db.models import Sum
 
 
 # Register your models here.

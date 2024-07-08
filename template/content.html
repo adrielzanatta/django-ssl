@@ -1,12 +1,12 @@
 {% extends 'base.html' %} 
 {% block content %}
 
-  <div class="flex flex-col">
+  <div class="flex flex-col items-center">
     
 
     <div
       id="menu"
-      class="menu mt-6 menu-horizontal text-lg flex flex-row align-middle justify-evenly bg-base-200 rounded-box h-fit"
+      class="menu mt-6 menu-horizontal text-lg flex flex-row align-middle justify-center gap-6 bg-base-200 rounded-box h-fit w-full"
       hx-boost="true"
     >
       <li><a href="{%url 'ranking' %}">Ranking Table</a></li>
@@ -16,7 +16,7 @@
 
 
 
-    <div id='content' class="flex justify-center px-8 h-5/6 order-last">
+    <div id='content' class="flex justify-center px-8 h-5/6 order-last max-w-4xl">
       {% if 'graph' in request.path %}
           {% include 'partials/ranking_graph.html' %}
       {% elif 'ranking' in request.path %}

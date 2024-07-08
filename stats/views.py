@@ -15,8 +15,8 @@ from django.db.models import (
 )
 from django.db.models.functions import Cast, Concat
 from stats.forms import FixtureForm, PlayerFormset, PlayerFormsetDetail
-from .models import Player, Season, Fixture
-from .utils import get_line_chart_cumpoints
+from .models import Player, Season, Fixture, Person
+from .utils import cum_goals_line_chart, cum_points_line_chart, player_attendance
 import plotly.express as px
 import math
 
@@ -64,15 +64,11 @@ def ranking_table(request):
         )
         .order_by("-points__sum", "-goals__sum")
     )
+
     attendance = request.GET.get("filter_attendance")
 
     if attendance:
-        if season == "all_seasons":
-            count_fixtures = Fixture.objects.all()
-        else:
-            count_fixtures = Fixture.objects.filter(season__pk=season)
-
-        count_fixtures = count_fixtures.aggregate(Count("id"))["id__count"]
+        count_fixtures = fixt_list.aggregate(Count("id"))["id__count"]
 
         rankings = rankings.filter(fixture__count__gte=math.ceil(count_fixtures / 2))
 
@@ -88,104 +84,51 @@ def graph(request):
 
 
 def graph_positions(request):
+    # Filter the season
     season = request.GET.get("filter_season")
     if season == "all_seasons":
         fixt_list = Fixture.objects.all()
     else:
         fixt_list = Fixture.objects.filter(season__pk=season)
 
-    qs_cumpoints = (
+    # Build the querysets
+    qs = (
         Player.objects.filter(fixture__in=fixt_list)
         .annotate(
             points=Case(
                 When(team_played=F("fixture__winner_team"), then=Value(3)),
                 When(fixture__winner_team=0, then=Value(1)),
-                default=Value(0),
-            ),
-        )
+                default=Value(0)
+                )
+            )
         .order_by("fixture__number")
         .annotate(
             cum_points=Window(
                 expression=Sum("points"),
                 partition_by=F("person__nickname"),
-                order_by=F("fixture__number").asc(),
-            )
-        )
-        .values("person__nickname", "cum_points", "fixture__number")
-        .order_by("fixture__number", "-cum_points")
-    )
-
-    fig_cumpoints = px.line(
-        x=[e["fixture__number"] for e in qs_cumpoints],
-        y=[e["cum_points"] for e in qs_cumpoints],
-        color=[e["person__nickname"] for e in qs_cumpoints],
-        template="plotly_dark",
-        title="Pontos corridos",
-        labels={"x": "Rodadas", "y": "Pontos Acumulados"},
-        width=800,
-        height=800,
-    )
-
-    fig_cumpoints.update_layout(
-        {
-            "plot_bgcolor": "rgba(0, 0, 0, 0)",
-            "paper_bgcolor": "rgba(0, 0, 0, 0)",
-        }
-    )
-
-    chart_cumpoints = fig_cumpoints.to_html()
-
-    qs_goals = (
-        Player.objects.filter(fixture__in=fixt_list)
-        .annotate(
+                order_by=F("fixture__number").asc()
+                ),
             cum_goals=Window(
                 expression=Sum("goals"),
                 partition_by=F("person__nickname"),
-                order_by=F("fixture__number").asc(),
-            ),
-            text=Concat(
-                "cum_goals", Value("-"), "person__nickname", output_field=CharField()
-            ),
-        )
-        .values("person__nickname", "cum_goals", "fixture__number", "text")
-        .order_by("-fixture__number", "-cum_goals")
+                order_by=F("fixture__number").asc()
+                )
+            )
     )
 
-    fig_goals = px.line(
-        x=[e["fixture__number"] for e in qs_goals],
-        y=[e["cum_goals"] for e in qs_goals],
-        color=[e["person__nickname"] for e in qs_goals],
-        template="plotly_dark",
-        title="Gols acumulados",
-        labels={"x": "Rodadas", "y": "Gols Acumulados"},
-        width=800,
-        height=800,
-    )
+    # Filter by attendance
+    attendance = request.GET.get("filter_attendance")
+    if attendance:
+        qs = player_attendance(fixtures=fixt_list, qs=qs)
 
-    fig_goals.update_layout(
-        {
-            "plot_bgcolor": "rgba(0, 0, 0, 0)",
-            "paper_bgcolor": "rgba(0, 0, 0, 0)",
-        },
-        showlegend=False,
-    )
+    # Create the figurtes and covert to html
+    qs_points = qs.order_by('-fixture__number', '-cum_points')
+    qs_goals = qs.order_by('-fixture__number', '-cum_goals')
+    
+    fig_cum_points = cum_points_line_chart(qs_points).to_html()
+    fig_cum_goals = cum_goals_line_chart(qs_goals).to_html()
 
-    for i, d in enumerate(fig_goals.data):
-        fig_goals.add_scatter(
-            x=[d.x[0]],
-            y=[d.y[0]],
-            mode="markers+text",
-            text=str(d.y[0]) + "-" + d.name,
-            textfont=dict(color=d.line.color, size=11),
-            textposition="middle right",
-            marker=dict(color=d.line.color, size=8),
-            legendgroup=d.name,
-            showlegend=False,
-        )
-
-    chart_cumgoals = fig_goals.to_html()
-
-    context = {"chart_cumpoints": chart_cumpoints, "chart_cumgoals": chart_cumgoals}
+    context = {"chart_cumpoints": fig_cum_points, "chart_cumgoals": fig_cum_goals}
 
     return render(request, "partials/ranking_graph.html", context)
 
